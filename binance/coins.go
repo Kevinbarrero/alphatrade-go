@@ -2,7 +2,6 @@ package binance
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 
@@ -13,12 +12,12 @@ type Coin struct {
 	Symbol string `json:"symbol"`
 }
 
-func Getcoins(config util.Config) ([]Coin, error) {
+func GetBinanceCoins(config util.Config) ([]Coin, error) {
 	requestURL := config.BinanceURL + "v1/ticker/price"
 
 	res, err := http.Get(requestURL)
 	if err != nil {
-		fmt.Errorf("error getting coins", err)
+		return nil, err
 	}
 
 	defer res.Body.Close()

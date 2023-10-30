@@ -1,11 +1,13 @@
-package util
+package db
 
 import (
 	"database/sql"
 	"fmt"
 	"log"
 
-	_ "github.com/lib/pq" // Import the PostgreSQL driver
+	"github.com/kevinbarrero/alphatrade-go/binance"
+	"github.com/kevinbarrero/alphatrade-go/util"
+	_ "github.com/lib/pq"
 )
 
 func coinQuery(db *sql.DB, tableName string) error {
@@ -26,13 +28,24 @@ func coinQuery(db *sql.DB, tableName string) error {
 	return err
 }
 
-func createCoin(coinName string) {
+func createCoin() {
 	db, err := sql.Open("postgres", "user=root dbname=alphatrade-go sslmode=disable")
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer db.Close()
-	if err := coinQuery(db, coinName); err != nil {
-		log.Fatal(err)
+	config, err := util.LoadConfig(".")
+	if err != nil {
+		log.Fatal("cannot load config")
 	}
+	coins, err := binance.GetBinanceCoins(config)
+	if err != nil {
+		log.Printf("cannot get coins from binance %s", err)
+	}
+	for _, i := range coins {
+		if err := coinQuery(db, i.Symbol); err != nil {
+			log.Fatal(err)
+		}
+	}
+
 }
